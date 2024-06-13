@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descubranime</title>
+    <link rel="stylesheet" href="index.css">
+    <style>
+/* Base do Site */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            background-image: url('Images/Background.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            margin: 0;
+            padding: 20px;
+            color: #000000;
+        }
+/* Título do Site */
+        h1 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 40x;
+        }
+
+/* Caixas de Dicas */
+        .hint-boxes {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .hint-box {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            width: 150px;
+        }
+        .hint-box img {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+        .hint-box p {
+            margin: 0;
+            color: #333;
+        }
+
+/* Cards dos personagens */
+        .character-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        .character-card {
+            position: relative;
+            background-color: #dffdff;
+            border: 3px solid #569fdb;;
+            border-radius: 8px;
+            width: 60px;
+            text-align: center;
+            font-size: 12px;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .character-card img {
+            width: 100%;
+            border-bottom: 1px solid #ccc;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .character-card p {
+            margin: 10px 0;
+        }
+        .character-card:hover {
+            transform: scale(1.30);
+        }
+        .character-card.error {
+            border-color: red;
+        }
+        .character-card.error::after {
+            color: rgb(255, 0, 0);
+            font-size: 24px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+/* Cards com respostas */
+        .info-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+        .info-grid {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .info-card {
+            width: 80px;
+            height: 80px;
+            padding: 0px;
+            border-radius: 8px;
+            text-align: center;
+            align-items: center;
+            align-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            color: #ffffff;
+        }
+        .info-card img {
+            width: 100%;
+            height: 100%;
+            align-content: center;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .info-card.correct {
+            background-color: #1ea723;
+        }
+        .info-card.incorrect {
+            background-color: #ac0b1b;
+        }
+
+/* Fim de Jogo */
+        #play-again-btn {
+            display: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+        #play-again-btn:hover {
+            background-color: #45a049;
+        }
+        #hint-image {
+            margin-bottom: 20px;
+            max-width: 600px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+        #success-image {
+            display: none;
+            margin-bottom: 20px;
+            max-width: 300px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+
+/* Títulos das respostas */
+        .info-header {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .info-header div {
+            width: 80px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            background-color: #ddd;
+            border-radius: 8px;
+        }
+
+/* Logo do Site */
+        .logo {
+            margin-bottom: 20px;
+        }
+        .logo img {
+            width: 200px;
+            cursor: pointer;
+        }
+
+/* Rodapé do Site */
+        .footer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .social-links {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+        .social-links img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+
+<!--Logo do Site-->
+    <div class="logo">
+        <a href="https://example.com">
+            <img src="Images/Logo.png" alt="Logo" id= "Logo-do-site">
+        </a>
+    </div>
+
+<!-- Título e Subtítulo-->
+    <h1>DESCUBRA O PERSONAGEM OCULTO</h1>
+    <p id="game-description">Escolha um personagem e se baseie nas informações para descobrir qual o personagem oculto. Divirta-se!</p>
+
+<!--Imagem de Dica (não utilizado, adiciona uma imagem de dica no começo do jogo correspondente ao personagem sorteado acima das duas dicas)-->
+    <!--<img id="hint-image" src="" alt="Imagem da Dica"-->
+
+<!--Duas caixas de dicas-->
+    <div class="hint-boxes">
+        <div class="hint-box" id="hint-box-5">
+            <img src="Images/Dicas/Dica.png" alt="Dica 1">
+            <p>Dica 1 após 5 tentativas</p>
+        </div>
+        <div class="hint-box" id="hint-box-10">
+            <img src="Images/Dicas/Dica.png" alt="Dica 2">
+            <p>Dica 2 após 10 tentativas</p>
+        </div>
+    </div>
+
+
+<!--Lista de Cards dos Personagens-->
+    <div class="character-grid" id="character-grid">
+
+<!-- Time Kakashi --> 
+        <div class="character-card" onclick="checkGuess('Naruto')">
+            <img src="Images/Face/Naruto.png" alt="Naruto">
+            <p>Naruto</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Sasuke')">
+            <img src="Images/Face/Sasuke.png" alt="Sasuke">
+            <p>Sasuke</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Sakura')">
+            <img src="Images/Face/Sakura.png" alt="Sakura">
+            <p>Sakura</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Kakashi')">
+            <img src="Images/Face/Kakashi.png" alt="Kakashi">
+            <p>Kakashi</p>      
+        </div>
+
+<!-- Time Kurenai -->          
+        <div class="character-card" onclick="checkGuess('Hinata')">
+            <img src="Images/Face/Hinata.png" alt="Hinata">
+            <p>Hinata</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Kiba')">
+            <img src="Images/Face/Kiba.png" alt="Kiba">
+            <p>Kiba</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Shino')">
+            <img src="Images/Face/Shino.png" alt="Shino">
+            <p>Shino</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Kurenai')">
+            <img src="Images/Face/Kurenai.png" alt="Kurenai">
+            <p>Kurenai</p>
+        </div>
+
+<!-- Time Asuma -->  
+        <div class="character-card" onclick="checkGuess('Shikamaru')">
+            <img src="Images/Face/Shikamaru.png" alt="Shikamaru">
+            <p>Shikamaru</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Ino')">
+            <img src="Images/Face/Ino.png" alt="Ino">
+            <p>Ino</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Choji')">
+            <img src="Images/Face/Choji.png" alt="Choji">
+            <p>Choji</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Asuma')">
+            <img src="Images/Face/Asuma.png" alt="Asuma">
+            <p>Asuma</p>
+        </div>
+
+<!-- Time Areia -->  
+        <div class="character-card" onclick="checkGuess('Gaara')">
+            <img src="Images/Face/Gaara.png" alt="Gaara">
+            <p>Gaara</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Kankuro')">
+            <img src="Images/Face/Kankuro.png" alt="Kankuro">
+            <p>Kankuro</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Temari')">
+            <img src="Images/Face/Temari.png" alt="Temari">
+            <p>Temari</p>
+        </div>
+
+<!-- Time Gai -->  
+        <div class="character-card" onclick="checkGuess('Rock Lee')">
+            <img src="Images/Face/Rock Lee.png" alt="Rock Lee">
+            <p>Rock Lee</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Neji')">
+            <img src="Images/Face/Neji.png" alt="Neji">
+            <p>Neji</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Tenten')">
+            <img src="Images/Face/Tenten.png" alt="Tenten">
+            <p>Tenten</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Gai')">
+            <img src="Images/Face/Gai.png" alt="Gai">
+            <p>Gai</p>
+        </div>
+
+<!-- Akatsuki -->  
+        <div class="character-card" onclick="checkGuess('Itachi')">
+            <img src="Images/Face/Itachi.png" alt="Itachi">
+            <p>Itachi</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Kisame')">
+            <img src="Images/Face/Kisame.png" alt="Kisame">
+            <p>Kisame</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Deidara')">
+            <img src="Images/Face/Deidara.png" alt="Deidara">
+            <p>Deidara</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Hidan')">
+            <img src="Images/Face/Hidan.png" alt="Hidan">
+            <p>Hidan</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Nagato')">
+            <img src="Images/Face/Nagato.png" alt="Nagato">
+            <p>Nagato</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Konan')">
+            <img src="Images/Face/Konan.png" alt="Konan">
+            <p>Konan</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Kakuzu')">
+            <img src="Images/Face/Kakuzu.png" alt="Kakuzu">
+            <p>Kakuzu</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Obito')">
+            <img src="Images/Face/Obito.png" alt="Obito">
+            <p>Obito</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Madara')">
+            <img src="Images/Face/Madara.png" alt="Madara">
+            <p>Madara</p>
+        </div>
+<!-- Hokages -->  
+        <div class="character-card" onclick="checkGuess('Hashirama')">
+            <img src="Images/Face/Hashirama.png" alt="Hashirama">
+            <p>Hashirama</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Tobirama')">
+            <img src="Images/Face/Tobirama.png" alt="Tobirama">
+            <p>Tobirama</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Hiruzen')">
+            <img src="Images/Face/Hiruzen.png" alt="Hiruzen">
+            <p>Hiruzen</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Minato')">
+            <img src="Images/Face/Minato.png" alt="Minato">
+            <p>Minato</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Tsunade')">
+            <img src="Images/Face/Tsunade.png" alt="Tsunade">
+            <p>Tsunade</p>
+        </div>
+<!-- Ninjas do Som -->  
+        <div class="character-card" onclick="checkGuess('Orochimaru')">
+            <img src="Images/Face/Orochimaru.png" alt="Orochimaru">
+            <p>Orochimaru</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Kimimaro')">
+            <img src="Images/Face/Kimimaro.png" alt="Kimimaro">
+            <p>Kimimaro</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Kidoumaru')">
+            <img src="Images/Face/Kidoumaru.png" alt="Kidoumaru">
+            <p>Kidoumaru</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Sakon')">
+            <img src="Images/Face/Sakon.png" alt="Sakon">
+            <p>Sakon</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Jiroubou')">
+            <img src="Images/Face/Jiroubou.png" alt="Jiroubou">
+            <p>Jiroubou</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Tayuya')">
+            <img src="Images/Face/Tayuya.png" alt="Tayuya">
+            <p>Tayuya</p>
+        </div> 
+<!-- Senseis -->  
+        <div class="character-card" onclick="checkGuess('Jiraiya')">
+            <img src="Images/Face/Jiraiya.png" alt="Jiraiya">
+            <p>Jiraiya</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Iruka')">
+            <img src="Images/Face/Iruka.png" alt="Iruka">
+            <p>Iruka</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Yamato')">
+            <img src="Images/Face/Yamato.png" alt="Yamato">
+            <p>Yamato</p>
+        </div>
+<!-- Vila do Raio -->  
+        <div class="character-card" onclick="checkGuess('A')">
+            <img src="Images/Face/A.png" alt="A">
+            <p>A</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Killer B')">
+            <img src="Images/Face/Killer B.png" alt="Killer B">
+            <p>Killer B</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Omoi')">
+            <img src="Images/Face/Omoi.png" alt="Omoi">
+            <p>Omoi</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Darui')">
+            <img src="Images/Face/Darui.png" alt="Darui">
+            <p>Darui</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Karui')">
+            <img src="Images/Face/Karui.png" alt="Karui">
+            <p>Karui</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Cee')">
+            <img src="Images/Face/Cee.png" alt="Cee">
+            <p>Cee</p>
+        </div>
+<!-- Jinchuurikis -->
+        <div class="character-card" onclick="checkGuess('Yugito')">
+            <img src="Images/Face/Yugito.png" alt="Yugito">
+            <p>Yugito</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Yagura')">
+            <img src="Images/Face/Yagura.png" alt="Yagura">
+            <p>Yagura</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Roshi')">
+            <img src="Images/Face/Roshi.png" alt="Roshi">
+            <p>Roshi</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Han')">
+            <img src="Images/Face/Han.png" alt="Han">
+            <p>Han</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Utakata')">
+            <img src="Images/Face/Utakata.png" alt="Utakata">
+            <p>Utakata</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Fu')">
+            <img src="Images/Face/Fu.png" alt="Fu">
+            <p>Fu</p>
+        </div>
+<!-- Kages -->
+        <div class="character-card" onclick="checkGuess('Mei')">
+            <img src="Images/Face/Mei.png" alt="Mei">
+            <p>Mei</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Onoki')">
+            <img src="Images/Face/Onoki.png" alt="Onoki">
+            <p>Onoki</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Rasa')">
+            <img src="Images/Face/Rasa.png" alt="Rasa">
+            <p>Rasa</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Choujuurou')">
+            <img src="Images/Face/Choujuurou.png" alt="Choujuurou">
+            <p>Choujuurou</p>
+        </div>
+
+        <div class="character-card" onclick="checkGuess('Rin')">
+            <img src="Images/Face/Rin.png" alt="Rin">
+            <p>Rin</p>
+        </div>
+        <div class="character-card" onclick="checkGuess('Kushina')">
+            <img src="Images/Face/Kushina.png" alt="Kushina">
+            <p>Kushina</p>
+        </div>
+
+    </div>
+
+<!-- Quando ganha o jogo-->
+    <div id="result"></div>
+    <div id="attempts-result"></div>
+    <img id="success-image" src="Images/Acertou.gif" alt="Imagem de Sucesso">
+    <button id="play-again-btn" onclick="resetGame()">Jogar Novamente</button>
+
+<!--Título das respostas dos cards-->
+    <div class="info-container-wrapper">
+        <div class="info-header">
+            <div>Personagem</div>
+            <div>Nome</div>
+            <div>Gênero</div>
+            <div>Tipo de Jutsu</div>
+            <div>Elementos</div>
+            <div>Aldeia</div>
+        </div>
+        <div id="info-container" class="info-container"></div>
+    </div>
+
+<!--Rodapé do Site-->    
+    <div class="footer">
+        <div class="social-links">
+            <a href="https://instagram.com/kelryson_brian"><img src="Images/Buttons/Instagram.png" alt="Social 1"></a>
+            <a href="https://patreon.com"><img src="Images/Buttons/Patreon.png" alt="Social 2"></a>
+            <a href="https://twitter.com"><img src="Images/Buttons/Twitter.png" alt="Social 3"></a>
+        </div>
+        <p id="Creditos"> Desenvolvido por Brian Amorim</p>
+    </div>
+
+    <script>
+
+/* Lista dos Personagens que tem no jogo (hintImg é a dica que não foi utiliada, hintImg5 é a dica 1 do jogo e hintImg10 é a dica 2 do jogo) */
+        const characters = [
+/* Time Kakashi */
+            { name: 'Naruto', gender: 'Masculino', estilo: 'Ninjutsu, Taijutsu', element: 'Vento, Água, Terra, Fogo, Relâmpago', aldeia: 'Konoha', hintImg: 'Images.png', hintImg5: 'Images/Dicas/Dica-estavivo.png', hintImg10: 'Images/Dicas/Dica-Jinchuuriki.png' },
+            { name: 'Sasuke', gender: 'Masculino', estilo: 'Ninjutsu, Genjutsu, Taijutsu', element: 'Vento, Água, Terra, Fogo, Relâmpago', aldeia: 'Konoha', hintImg: 'Images/hint.png', hintImg5: 'Images/Dicas/Dica-Olhos.png', hintImg10: 'Images/Dicas/Dica-Akatsuki.png' },
+            { name: 'Sakura', gender: 'Feminino', estilo: 'Ninjutsu, Taijutsu', element: 'Água, Terra', aldeia: 'Konoha', hintImg: 'path/to/hint_sakura.jpg', hintImg5: 'Images/Dicas/Dica-estavivo.png', hintImg10: 'Images/Dicas/Dica-Classico.png' },
+            { name: 'Kakashi', gender: 'Masculino', estilo: 'Ninjutsu, Genjutsu, Taijutsu', element: 'Vento, Água, Terra, Fogo, Relâmpago', aldeia: 'Konoha', hintImg: 'path/to/hint_kakashi.jpg', hintImg5: 'Images/Dicas/Dica-Olhos.png', hintImg10: 'Images/Dicas/Dica/Kage.png' },
+/* Time Kurenai */
+            { name: 'Hinata', gender: 'Feminino', estilo: 'Ninjutsu', element: 'Fogo, Relâmpago', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Olhos.png', hintImg10: 'Images/Dicas/Dica-Chunnin.png' },
+            { name: 'Kiba', gender: 'Masculino', estilo: 'Ninjutsu, Taijutsu', element: 'Terra', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estavivo.png', hintImg10: 'Images/Dicas/Dica-Chunnin.png' },
+            { name: 'Shino', gender: 'Masculino', estilo: 'Ninjutsu, Taijutsu', element: 'Terra, Fogo', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Chunnin.png' },
+            { name: 'Kurenai', gender: 'Feminino', estilo: 'Genjutsu', element: 'Não tem', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estavivo.png', hintImg10: 'Images/Dicas/Dica-Chunnin.png' },
+/* Time Asuma */
+            { name: 'Shikamaru', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Terra, Fogo', aldeia: 'Konoha', hintImg: 'path/to/hint_shikamaru.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Chunnin.png' },
+            { name: 'Ino', gender: 'Feminino', estilo: 'Ninjutsu', element: 'Água, Terra', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Chunnin.png' },
+            { name: 'Choji', gender: 'Masculino', estilo: 'Ninjutsu, Taijutsu', element: 'Terra, Fogo', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Chunnin.png' },
+            { name: 'Asuma', gender: 'Masculino', estilo: 'Ninjutsu, Taijutsu', element: 'Vento, Fogo', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Chunnin.png' },
+/* Time Areia */
+            { name: 'Gaara', gender: 'Masculino', estilo: 'Ninjutsu, Taijutsu', element: 'Vento, Terra, Relâmpago', aldeia: 'Suna', hintImg: 'path/to/hint_gaara.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Jinchuuriki.png' },
+            { name: 'Temari', gender: 'Feminino', estilo: 'Ninjutsu, Taijutsu', element: 'Vento', aldeia: 'Suna', hintImg: 'path/to/hint_temari.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Chunnin.png' },
+            { name: 'Kankuro', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Vento, Água, Terra, Relâmpago', aldeia: 'Suna', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Chunnin.png' },
+/* Time Gai */
+            { name: 'Neji', gender: 'Masculino', estilo: 'Ninjutsu, Taijutsu', element: 'Água, Terra, Fogo', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Olhos.png', hintImg10: 'Images/Dicas/Dica-Chunnin.png' },
+            { name: 'Tenten', gender: 'Feminino', estilo: 'Ninjutsu, Taijutsu', element: 'Não tem', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Chunnin.png' },
+            { name: 'Rock Lee', gender: 'Masculino', estilo: 'Taijutsu', element: 'Não tem', aldeia: 'Konoha', hintImg: 'path/to/hint_rocklee.jpg', hintImg5: 'Images/Dicas/Dica-estavivo.png', hintImg10: 'Images/Dicas/Dica-Chunnin.png' },
+            { name: 'Gai', gender: 'Masculino', estilo: 'Ninjutsu, Taijutsu', element: 'Fogo, relâmpago', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estavivo.png', hintImg10: 'Images/Dicas/Dica-Chunnin.png' },
+/* Akatsuki */
+            { name: 'Itachi', gender: 'Masculino', estilo: 'Ninjustu, Genjutsu, Taijutsu', element: 'Vento, Água, Fogo', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Olhos.png', hintImg10: 'Images/Dicas/Dica-Akatsuki.png' },
+            { name: 'Kisame', gender: 'Masculino', estilo: 'Ninjutsu, Genjutsu', element: 'Vento, Água, Terra, Fogo', aldeia: 'Kiri', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Akatsuki.png' },
+            { name: 'Deidara', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Terra, Relâmpago', aldeia: 'Iwa', hintImg: 'path/to/hint_rocklee.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Akatsuki.png' },
+            { name: 'Hidan', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Nâo tem', aldeia: 'Yu', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Akatsuki.png' },
+            { name: 'Nagato', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Vento, Água, Terra, Fogo, Relâmpago', aldeia: 'Ame', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Olhos.png', hintImg10: 'Images/Dicas/Dica-Akatsuki.png' },
+            { name: 'Konan', gender: 'Feminino', estilo: 'Ninjutsu', element: 'Água, Terra, Vento', aldeia: 'Ame', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Akatsuki.png' },
+            { name: 'Kakuzu', gender: 'Masculino', estilo: 'Ninjutsu, Taijutsu', element: 'Vento, Água, Terra, Fogo, Relâmpago', aldeia: 'Taki', hintImg: 'path/to/hint_rocklee.jpg', hintImg5: 'Images/Dicas/Dica-estamorto.png', hintImg10: 'Images/Dicas/Dica-Akatsuki.png' },
+            { name: 'Obito', gender: 'Masculino', estilo: 'Ninjutsu, Genjutsu, Taijutsu', element: 'Vento, Água, Terra, Fogo, Relâmpago', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Olhos.png', hintImg10: 'Images/Dicas/Dica-Jinchuuriki.png' },
+            { name: 'Madara', gender: 'Masculino', estilo: 'Ninjutsu, Genjutsu, Taijutsu', element: 'Vento, Água, Terra, Fogo, Relâmpago', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Olhos.png', hintImg10: 'Images/Dicas/Dica-Akatsuki.png' },
+/* Hokages */
+            { name: 'Hashirama', gender: 'Feminino', estilo: 'Ninjutsu, Genjutsu, Taijutsu', element: 'Vento, Água, Terra, Fogo, Relâmpago', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Kage.png' },
+            { name: 'Tobirama', gender: 'Feminino', estilo: 'Ninjutsu, Genjutsu, Taijutsu', element: 'Vento, Água, Terra, Fogo, Relâmpago', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estamorto.png', hintImg10: 'Images/Dicas/Dica-Kage.png' },
+            { name: 'Hiruzen', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Vento, Água, Terra, Fogo, Relâmpago', aldeia: 'Konoha', hintImg: 'path/to/hint_rocklee.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Kage.png' },
+            { name: 'Minato', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Vento, Fogo, Relâmpago', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Kage.png' },
+            { name: 'Tsunade', gender: 'Feminino', estilo: 'Ninjutsu, Genjutsu', element: 'Água, Terra, Fogo, Relâmpago', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estavivo.png', hintImg10: 'Images/Dicas/Dica-Kage.png' },
+/* Ninjas do Som */
+            { name: 'Orochimaru', gender: 'Masculino', estilo: 'Ninjutsu, Taijutsu', element: 'Vento, Água, Terra, Fogo, Relâmpago', aldeia: 'Konoha', hintImg: '', hintImg5: 'Images/Dicas/Dica-estavivo.png', hintImg10: 'Images/Dicas/Dica-Classico.png' },
+            { name: 'Kimimaro', gender: 'Masculino', estilo: '163 cm', element: 'Não tem', aldeia: 'Oto', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estamorto.png', hintImg10: 'Images/Dicas/Dica-Classico.png' },
+            { name: 'Kidoumaru', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Não tem', aldeia: 'Oto', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estamorto.png', hintImg10: 'Images/Dicas/Dica-Classico.png' },
+            { name: 'Sakon', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Não tem', aldeia: 'Oto', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Cabelopreto.png', hintImg10: 'Images/Dicas/Dica-Classico.png' },
+            { name: 'Jiroubou', gender: 'Masculino', estilo: 'Ninjutsu, Taijutsu', element: 'Não tem', aldeia: 'Oto', hintImg: 'path/to/hint_rocklee.jpg', hintImg5: 'Images/Dicas/Dica-estamorto.png', hintImg10: 'Images/Dicas/Dica-Classico.png' },
+            { name: 'Tayuya', gender: 'Feminino', estilo: 'Ninjutsu, Genjutsu', element: 'Não tem', aldeia: 'Oto', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Classico.png' },
+/* Senseis */
+            { name: 'Jiraiya', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Vento, Água, Terra, Fogo', aldeia: 'Konhoa', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estamorto.png', hintImg10: 'Images/Dicas/Dica-Classico.png' },
+            { name: 'Iruka', gender: 'Masculino', estilo: 'Ninjutsu, Genjutsu', element: 'Água, Fogo', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estavivo.png', hintImg10: 'Images/Dicas/Dica-Classico.png' },
+            { name: 'Yamato', gender: 'Masculino', estilo: 'Ninjutsu, Taijutsu', element: 'Água, Terra', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estavivo.png', hintImg10: 'Images/Dicas/Dica-Shippuden.png' },
+/* Ninjas da Névoa */
+            { name: 'A', gender: 'Masculino', estilo: 'Ninjutsu, Taijutsu', element: 'Água, Terra, Relâmpago', aldeia: 'Kumo', hintImg: 'path/to/hint_rocklee.jpg', hintImg5: 'pImages/Dicas/Dica-Cabelopreto.png', hintImg10: 'Images/Dicas/Dica-Kage.png' },
+            { name: 'Killer B', gender: 'Masculino', estilo: 'Ninjutsu, Taijutsu', element: 'Água, Fogo, Relâmpago', aldeia: 'Kumo', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Arma-Habilidade.png', hintImg10: 'Images/Dicas/Dica-Jinchuuriki.png' },
+            { name: 'Omoi', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Relâmpago', aldeia: 'Kumo', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Cabelopreto.png', hintImg10: 'Images/Dicas/Dica-Shippuden.png' },
+            { name: 'Darui', gender: 'Masculino', estilo: 'Ninjutsu, Taijutsu', element: 'Vento, Água, Relâmpago', aldeia: 'Kumo', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Cabelopreto.png', hintImg10: 'Images/Dicas/Dica-Shippuden.png' },
+            { name: 'Karui', gender: 'Feminino', estilo: 'Não tem', element: 'Não tem', aldeia: 'Kumo', hintImg: 'path/to/hint_rocklee.jpg', hintImg5: 'Images/Dicas/Dica-Cabelopreto.png', hintImg10: 'Images/Dicas/Dica-Shippuden.png' },
+            { name: 'Cee', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Relâmpago', aldeia: 'Kumo', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estavivo.png', hintImg10: 'Images/Dicas/Dica-Shippuden.png' },
+/* Jinchuurikis */
+            { name: 'Yugito', gender: 'Feminino', estilo: 'Ninjutsu, Taijutsu', element: 'Fogo', aldeia: 'Kumo', hintImg: 'path/to/hint_rocklee.jpg', hintImg5: 'Images/Dicas/Dica-estamorto.png', hintImg10: 'Images/Dicas/Dica-Jinchuuriki.png' },
+            { name: 'Yagura', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Água', aldeia: 'Kiri', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estamorto.png', hintImg10: 'Images/Dicas/Dica-Kage.png' },
+            { name: 'Roshi', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Terra, Fogo', aldeia: 'Iwa', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estamorto.png', hintImg10: 'Images/Dicas/Dica-Jinchuuriki.png' },
+            { name: 'Han', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Água, Fogo', aldeia: 'Iwa', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estamorto.png', hintImg10: 'Images/Dicas/Dica-Jinchuuriki.png' },
+            { name: 'Utakata', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Água', aldeia: 'Kiri', hintImg: 'path/to/hint_rocklee.jpg', hintImg5: 'Images/Dicas/Dica-estamorto.png', hintImg10: 'Images/Dicas/Dica-Jinchuuriki.png' },
+            { name: 'Fu', gender: 'Feminino', estilo: 'Ninjutsu', element: 'Não tem', aldeia: 'Taki', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-Cabelopreto.png', hintImg10: 'Images/Dicas/Dica-Jinchuuriki.png' },
+/* Kages */
+            { name: 'Mei', gender: 'Feminino', estilo: 'Ninjutsu, Taijutsu', element: 'Água, Terra, Fogo, Relâmpago', aldeia: 'Kiri', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estavivo.png', hintImg10: 'Images/Dicas/Dica-Kage.png' },
+            { name: 'Onoki', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Vento, Terra, Fogo, Relâmpago', aldeia: 'Iwa', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estavivo.png', hintImg10: 'Images/Dicas/Dica-Shippuden.png' },
+            { name: 'Rasa', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Terra', aldeia: 'Suna', hintImg: 'path/to/hint_rocklee.jpg', hintImg5: 'Images/Dicas/Dica-estamorto.png', hintImg10: 'Images/Dicas/Dica-Shippuden.png' },
+            { name: 'Choujuurou', gender: 'Masculino', estilo: 'Ninjutsu', element: 'Não tem', aldeia: 'Kiri', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estavivo.png', hintImg10: 'Images/Dicas/Dica-Kage.png' },
+/* Outros */
+            { name: 'Rin', gender: 'Feminino', estilo: 'Ninjutsu', element: 'Água, Fogo', aldeia: 'Konoha', hintImg: 'path/to/hint_rocklee.jpg', hintImg5: 'Images/Dicas/Dica-estamorto.png', hintImg10: 'Images/Dicas/Dica-Jinchuuriki.png' },
+            { name: 'Kushina', gender: 'Feminino', estilo: 'Ninjutsu', element: 'Vento, Água', aldeia: 'Konoha', hintImg: 'path/to/hint_hinata.jpg', hintImg5: 'Images/Dicas/Dica-estamorto.png', hintImg10: 'Images/Dicas/Dica-Jinchuuriki.png' },
+
+        ];
+
+/* Sorteio do persoangem - Criar contagem de tentativas */        
+        let randomCharacter = characters[Math.floor(Math.random() * characters.length)];
+        let wrongGuesses = 0;
+        let gameActive = true;
+
+
+/* Imagem da dica inicial que não foi utilizado
+        document.getElementById('hint-image').src = randomCharacter.hintImg; */
+
+/* Checar personagem sorteado */
+        function checkGuess(name) {
+            if (!gameActive) return;
+
+            const resultDiv = document.getElementById('result');
+            const attemptsResultDiv = document.getElementById('attempts-result');
+            const guessedCharacter = characters.find(character => character.name === name);
+
+            const card = document.querySelector(`.character-card:has(img[alt="${name}"])`);
+
+/* Caso acerte o personagem */
+            if (guessedCharacter.name === randomCharacter.name) {
+                resultDiv.textContent = `Parabéns! Você acertou. O personagem oculto é ${randomCharacter.name}.`;
+                attemptsResultDiv.innerHTML = `<span id="attempts-text">Você acertou em ${wrongGuesses + 1} tentativas.</span>`;
+                updateInfoCards(guessedCharacter, true);
+                document.getElementById('play-again-btn').style.display = 'block';
+                document.getElementById('success-image').style.display = 'block';
+                gameActive = false;
+
+/* Caso erre o personagem */                
+            } else {
+                wrongGuesses++;
+                resultDiv.textContent = `Esse não é o personagem. Tente novamente.`;
+                card.classList.add('error');
+                updateInfoCards(guessedCharacter, false);
+                setTimeout(() => {
+                    card.remove();
+                }, 500);
+
+/* Dica depois de 5 tentativas */                
+                if (wrongGuesses === 5) {
+                    document.getElementById('hint-box-5').innerHTML = `<img src="${randomCharacter.hintImg5}" alt="Dica 1"><p>${getHintText(randomCharacter, 5)}</p>`;
+                }
+/* Dica depois de 10 tentativas */
+                if (wrongGuesses === 10) {
+                    document.getElementById('hint-box-10').innerHTML = `<img src="${randomCharacter.hintImg10}" alt="Dica 2"><p>${getHintText(randomCharacter, 10)}</p>`;
+                }
+            }
+        }
+
+/* Adicionar os personagens escolhidos em uma lista abaixo. */        
+        function updateInfoCards(character, isCorrect) {
+            const infoContainer = document.getElementById('info-container');
+            const infoGrid = document.createElement('div');
+            infoGrid.className = 'info-grid';
+
+            const fields = ['name', 'gender', 'estilo', 'element', 'aldeia'];
+            
+            const imgCard = document.createElement('div');
+            imgCard.className = 'info-card';
+            const img = document.createElement('img');
+            img.src = `Images/Face/${character.name}.png`;
+            img.alt = character.name;
+            imgCard.appendChild(img);
+            infoGrid.appendChild(imgCard);
+
+            fields.forEach(field => {
+                const infoCard = document.createElement('div');
+                infoCard.className = 'info-card';
+                infoCard.textContent = `${character[field]}`;
+             
+                if (isCorrect || character[field] === randomCharacter[field]) {
+                    infoCard.classList.add('correct');
+                } else {
+                    infoCard.classList.add('incorrect');
+                }
+                infoGrid.appendChild(infoCard);
+            });
+
+            infoContainer.insertBefore(infoGrid, infoContainer.firstChild);
+        }
+
+/* Conteúdo das dicas que vai aparecer para cada personagem em 5 tentativas */        
+        function getHintText(character, attempts) {
+            if (attempts === 5) {
+                switch (character.name) {
+                    case 'Naruto':
+                        return 'Ainda está vivo.';
+                    case 'Sasuke':
+                        return 'Tem olhos poderosos.';
+                    case 'Sakura':
+                        return 'Ainda está vivo.';
+                    case 'Kakashi':
+                        return 'Tem olhos poderosos.';
+                    case 'Hinata':
+                        return 'Tem olhos poderosos.';
+                    case 'Kiba':
+                        return 'Ainda está vivo.';
+                    case 'Shino':
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Shikamaru':
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Ino':
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Choji':
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Gaara':
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Temari':
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Kankuro': 
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Rock Lee':
+                        return 'Ainda está vivo.';
+                    case 'Neji':
+                        return 'Tem olhos poderosos.';
+                    case 'Tenten':
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Gai':
+                        return 'Ainda está vivo';
+                    case 'Kurenai':
+                        return 'Ainda está vivo';
+                    case 'Asuma':
+                        return 'Ele está morto.';
+                    case 'Itachi':
+                        return 'Tem olhos poderosos.';
+                    case 'Kisame':
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Deidara': 
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Hidan': 
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Nagato': 
+                        return 'Tem olhos poderosos.';
+                    case 'Konan':
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Kakuzu':
+                        return 'Ele está morto.';
+                    case 'Obito': 
+                        return 'Tem olhos poderosos.';
+                    case 'Madara':
+                        return 'Tem olhos poderosos.';
+                    case 'Hashirama':
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Tobirama':
+                        return 'Ele está morto.';
+                    case 'Hiruzen':
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Minato':
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Tsunade':
+                        return 'Ainda está vivo.';
+                    case 'Orochimaru':
+                        return 'Ainda está vivo.';
+                    case 'Kimimaro':
+                        return 'Possui uma arma/habilidade punica.';
+                    case 'Kidomaru':
+                        return 'Ele está morto.';
+                    case 'Sakon':
+                        return 'Seu cabelo não é preto.';
+                    case 'Jiroubou':
+                        return 'Ele está morto.';
+                    case 'Tayuya':
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Jiraiya':
+                        return 'Ele está morto.';
+                    case 'Iruka':
+                        return 'Ainda está vivo.';
+                    case 'Rin':
+                        return 'Ele está morto.';
+                    case 'Kushina':
+                        return 'Ele está morto.';
+                    case 'Yamato':
+                        return 'Ainda está vivo.';
+                    case 'A':
+                        return 'Seu cabelo não é preto.';
+                    case 'Killer B':
+                        return 'Possui uma arma/habilidade única.';
+                    case 'Omoi':
+                        return 'Seu cabelo não é preto.';
+                    case 'Darui':
+                        return 'Seu cabelo não é preto.';
+                    case 'Karui':
+                        return 'Seu cabelo não é preto.';
+                    case 'Cee':
+                        return 'Ainda está vivo';
+                    case 'Yugito':
+                        return 'Ele está morto.';
+                    case 'Yagura':
+                        return 'Ele está morto.';
+                    case 'Roshi':
+                        return 'Ele está morto.';
+                    case 'Han':
+                        return 'Ele está morto.';
+                    case 'Utakata':
+                        return 'Ele está morto.';
+                    case 'Fu':
+                        return 'Seu cabelo não é preto.';
+                    case 'Mei':
+                        return 'Ele está vivo.';
+                    case 'Rasa':
+                        return 'Ele está morto.';
+                    case 'Choujuurou':
+                        return 'Ainda está vivo.';
+                    case 'Onoki':
+                        return 'Ainda está vivo.';
+                    
+
+
+                }
+
+/* Conteúdo das dicas que vai aparecer para cada personagem em 10 tentativas */        
+
+            } else if (attempts === 10) {
+                switch (character.name) {
+                    case 'Naruto Uzumaki':
+                        return 'Ele é um Jinchuuriki.';
+                    case 'Sasuke Uchiha':
+                        return 'Já fez parte da Akatsuki.';
+                    case 'Sakura Haruno':
+                        return 'Apareceu em Naruto Clássico.';
+                    case 'Kakashi Hatake':
+                        return 'Ele é um Kage.';
+                    case 'Hinata Hyuga':
+                        return 'Apareceu na saga Chunin.'
+                    case 'Kiba':
+                        return 'Apareceu na saga Chunin.';
+                    case 'Shino':
+                        return 'Apareceu na saga Chunin.';
+                    case 'Shikamaru':
+                        return 'Apareceu na saga Chunin.';
+                    case 'Ino':
+                        return 'Apareceu na saga Chunin.';
+                    case 'Choji':
+                        return 'Apareceu na saga Chunin.';
+                    case 'Gaara':
+                        return 'Ele é um Jinchuuriki.';
+                    case 'Temari':
+                        return 'Apareceu na saga Chunin.';
+                    case 'Kankuro': 
+                        return 'Apareceu na saga Chunin.';
+                    case 'Rock Lee':
+                        return 'Apareceu na saga Chunin.';
+                    case 'Neji':
+                        return 'Apareceu na saga Chunin.';
+                    case 'Tenten':
+                        return 'Apareceu na saga Chunin.';
+                    case 'Gai':
+                        return 'Apareceu na saga Chunin.';
+                    case 'Kurenai':
+                        return 'Apareceu na saga Chunin.';
+                    case 'Asuma':
+                        return 'Apareceu na saga Chunin.';
+                    case 'Itachi':
+                        return 'Já fez parte da Akatsuki.';
+                    case 'Kisame':
+                        return 'Já fez parte da Akatsuki.';
+                    case 'Deidara': 
+                        return 'Já fez parte da Akatsuki.';
+                    case 'Hidan': 
+                        return 'Já fez parte da Akatsuki.';
+                    case 'Nagato': 
+                        return 'Já fez parte da Akatsuki.';
+                    case 'Konan':
+                        return 'Já fez parte da Akatsuki.';
+                    case 'Kakuzu':
+                        return 'Já fez parte da Akatsuki.';
+                    case 'Obito': 
+                        return 'Ele é um Jinchuuriki.';
+                    case 'Madara':
+                        return 'Já fez parte da Akatsuki.';
+                    case 'Hashirama':
+                        return 'Ele é um Kage.';
+                    case 'Tobirama':
+                        return 'Ele é um Kage.';
+                    case 'Hiruzen':
+                        return 'Ele é um Kage.';
+                    case 'Minato':
+                        return 'Ele é um Kage.';
+                    case 'Tsunade':
+                        return 'Ele é um Kage.';
+                    case 'Orochimaru':
+                        return 'Ainda está vivo.';
+                    case 'Kimimaro':
+                        return 'Apareceu em Naruto Clássico.';
+                    case 'Kidomaru':
+                        return 'Apareceu em Naruto Clássico.';
+                    case 'Sakon':
+                        return 'Apareceu em Naruto Clássico.';
+                    case 'Jiroubou':
+                        return 'Apareceu em Naruto Clássico.';
+                    case 'Tayuya':
+                        return 'Apareceu em Naruto Clássico.';
+                    case 'Jiraiya':
+                        return 'Apareceu em Naruto Clássico.';
+                    case 'Iruka':
+                        return 'Apareceu em Naruto Clássico.';
+                    case 'Rin':
+                        return 'Ele é um Jinchuuriki.';
+                    case 'Kushina':
+                        return 'Ele é um Jinchuuriki.';
+                    case 'Yamato':
+                        return 'Apareceu em Naruto Shippuden.';
+                    case 'A':
+                        return 'Apareceu em Naruto Shippuden.';
+                    case 'Killer B':
+                        return 'Ele é um Jinchuuriki.';
+                    case 'Omoi':
+                        return 'Apareceu em Naruto Shippuden.';
+                    case 'Darui':
+                        return 'Apareceu em Naruto Shippuden.';
+                    case 'Karui':
+                        return 'Apareceu em Naruto Shippuden.';
+                    case 'Cee':
+                        return 'Apareceu em Naruto Shippuden.';
+                    case 'Yugito':
+                        return 'Ele é um Jinchuuriki.';
+                    case 'Yagura':
+                        return 'Ele é um Kage.';
+                    case 'Roshi':
+                        return 'Ele é um Jinchuuriki.';
+                    case 'Han':
+                        return 'Ele é um Jinchuuriki.';
+                    case 'Utakata':
+                        return 'Ele é um Jinchuuriki.';
+                    case 'Fu':
+                        return 'Ele é um Jinchuuriki.';
+                    case 'Mei':
+                        return 'Ele é um Kage.';
+                    case 'Rasa':
+                        return 'Ele é um Kage.';
+                    case 'Choujuurou':
+                        return 'Ele é um Kage.';
+                    case 'Onoki':
+                        return 'Ele é um Kage.';
+                }
+            }
+        }
+/* Função que reseta o jogo recarregando a página */
+        function resetGame() {
+            location.reload();
+        }
+
+
+    </script>
+
+</body>
+</html>
